@@ -96,7 +96,7 @@ Help us spread the word about Athena Create API by sharing this project with you
 
 ## License
 
-This project is licensed under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license.
+This project is licensed under the terms of the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license.](/LICENSE)
 
 ## Contact
 
