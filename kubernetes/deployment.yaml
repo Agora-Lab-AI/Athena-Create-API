@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: athena-backend
+  template:
+    metadata:
+      labels:
+        app: athena-backend
+    spec:
+      containers:
+      - name: athena-backend
+        image: your-dockerhub-username/athena-backend:latest
+        ports:
+        - containerPort: 8004
+        - containerPort: 8005
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 80Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: 500m
+            memory: 50Gi
+        env:
+        - name: CONFIG_FILE
+          value: "configs/config.default.yaml"
+      imagePullSecrets:
+      - name: regcred

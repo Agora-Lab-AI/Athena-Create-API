@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: athena-backend
+spec:
+  selector:
+    app: athena-backend
+  ports:
+  - protocol: TCP
+    port: 8004
+    targetPort: 8004
+    name: model-server
+  - protocol: TCP
+    port: 8005
+    targetPort: 8005
+    name: web-server
+  type: LoadBalancer
