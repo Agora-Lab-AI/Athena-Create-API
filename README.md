@@ -101,3 +101,137 @@ This project is licensed under the terms of the [Creative Commons Attribution-No
 ## Contact
 
 If you have any questions or suggestions, please feel free to open an issue [here](https://github.com/Agora-X/Athena-Create-API/issues).
+
+
+# Deploying Athena Create API on AWS using Kubernetes
+
+This guide will provide extensive and detailed instructions on how to deploy the Athena Create API on AWS using Kubernetes, configured for self-healing, auto-scaling, and other important production infrastructure features.
+
+### Prerequisites
+
+Before starting, ensure the following requirements are met:
+
+1. You have an AWS account.
+2. You have installed and configured the AWS CLI.
+3. You have installed and configured `kubectl` and `eksctl` on your local machine.
+4. You have a Docker Hub account (for storing Docker images).
+5. You have Docker installed on your local machine.
+
+### Table of Contents
+
+1. [Build Docker Image](#build-docker-image)
+2. [Push Docker Image to Docker Hub](#push-docker-image-to-docker-hub)
+3. [Setup AWS EKS Cluster](#setup-aws-eks-cluster)
+4. [Deploy Application](#deploy-application)
+5. [Setup Load Balancer](#setup-load-balancer)
+6. [Setup Auto-scaling](#setup-auto-scaling)
+7. [Testing](#testing)
+8. [Monitoring and Logging](#monitoring-and-logging)
+9. [Cleanup](#cleanup)
+
+## 1. Build Docker Image <a name="build-docker-image"></a>
+
+From the root directory of the project, build the Docker image:
+
+```bash
+docker build -t athena-create-api .
+```
+
+Make sure to replace `athena-create-api` with the desired name for the Docker image.
+
+## 2. Push Docker Image to Docker Hub <a name="push-docker-image-to-docker-hub"></a>
+
+Tag the image with your Docker Hub username and the image name, then push it:
+
+```bash
+docker tag athena-create-api:latest yourusername/athena-create-api:latest
+docker push yourusername/athena-create-api:latest
+```
+
+## 3. Setup AWS EKS Cluster <a name="setup-aws-eks-cluster"></a>
+
+Create an EKS cluster using `eksctl`:
+
+```bash
+eksctl create cluster --name athena-create-api-cluster --region us-west-2 --nodes 3
+```
+
+Replace `us-west-2` with the desired AWS region and `3` with the desired number of nodes.
+
+## 4. Deploy Application <a name="deploy-application"></a>
+
+First, apply the Kubernetes secrets and configmaps:
+
+```bash
+kubectl apply -f kubernetes/athena-create-api-secret.yaml
+kubectl apply -f kubernetes/athena-create-api-configmap.yaml
+```
+
+Next, update the `athena-create-api-deployment.yaml` file with the Docker image you pushed to Docker Hub:
+
+```yaml
+spec:
+  containers:
+  - name: athena-create-api
+    image: yourusername/athena-create-api:latest
+    ...
+```
+
+Then, apply the Kubernetes deployment and service:
+
+```bash
+kubectl apply -f kubernetes/athena-create-api-deployment.yaml
+kubectl apply -f kubernetes/athena-create-api-service.yaml
+```
+
+## 5. Setup Load Balancer <a name="setup-load-balancer"></a>
+
+In the `athena-create-api-service.yaml` file, make sure the service type is set to `LoadBalancer`:
+
+```yaml
+spec:
+  type: LoadBalancer
+  ...
+```
+
+Once the service is applied, you can get the public URL of your application with:
+
+```bash
+kubectl get service athena-create-api-service
+```
+
+## 6. Setup Auto-scaling <a name="setup-auto-scaling"></a>
+
+Apply the Kubernetes Horizontal Pod Autoscaler:
+
+```bash
+kubectl apply -f kubernetes
+
+/athena-create-api-hpa.yaml
+```
+
+Make sure to configure the `minReplicas`, `maxReplicas`, and `targetCPUUtilizationPercentage` fields in the `athena-create-api-hpa.yaml` file based on your needs.
+
+## 7. Testing <a name="testing"></a>
+
+Test the deployment by navigating to the public URL of your application from the Load Balancer.
+
+## 8. Monitoring and Logging <a name="monitoring-and-logging"></a>
+
+You can use Amazon CloudWatch for monitoring and logging. To access logs:
+
+1. Open the CloudWatch console.
+2. In the navigation pane, choose `Logs`.
+3. In the log groups pane, choose the log group for your application.
+
+You can also use `kubectl` commands to monitor the pods and nodes of your Kubernetes cluster.
+
+## 9. Cleanup <a name="cleanup"></a>
+
+To avoid incurring charges, you can delete the EKS cluster when you're done:
+
+```bash
+eksctl delete cluster --name athena-create-api-cluster
+```
+
+**Note**: Be sure to replace any placeholder values with your actual values throughout this guide. It's also important to understand that managing a Kubernetes cluster on AWS may incur charges, so always monitor your usage and costs.
