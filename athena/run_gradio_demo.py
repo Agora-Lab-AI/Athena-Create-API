@@ -1,9 +1,11 @@
-import uuid
-import gradio as gr
 import re
-from diffusers.utils import load_image
+import uuid
+
+import gradio as gr
 import requests
-from awesome_chat import chat_huggingface
+from diffusers.utils import load_image
+
+from athena.chat import chat_huggingface
 
 all_messages = []
 OPENAI_KEY = ""

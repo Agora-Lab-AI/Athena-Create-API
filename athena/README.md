@@ -1,4 +1,4 @@
-# Athena Create API
+# athena Create API
 
 ## Overview
 
